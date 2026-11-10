@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle : '인덕대학교 컴퓨터전자공학과 게시판' %></title>
+  <!-- Pretendard 폰트 -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <!-- Font Awesome 아이콘 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- 커스텀 스타일 -->
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <div class="logo-area">
+        <a href="/board" class="brand-link">
+          <div class="brand-badge">INDUK UNIV</div>
+          <div class="brand-text">
+            <span class="univ-name">인덕대학교</span>
+            <span class="dept-name">컴퓨터전자공학과 게시판</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="main-nav">
+        <ul class="nav-links">
+          <li>
+            <a href="/board" class="nav-item <%= currentPath === '/board' ? 'active' : '' %>">
+              <i class="fas fa-list-ul"></i> 전체 게시글
+            </a>
+          </li>
+          <% if (user) { %>
+            <li>
+              <a href="/board/new" class="nav-item <%= currentPath === '/board/new' ? 'active' : '' %>">
+                <i class="fas fa-pen-nib"></i> 글 작성
+              </a>
+            </li>
+            <% if (user.role === 'admin') { %>
+              <li>
+                <a href="/admin" class="nav-item admin-nav <%= currentPath.startsWith('/admin') ? 'active' : '' %>">
+                  <i class="fas fa-shield-halved"></i> 관리자 페이지
+                </a>
+              </li>
+            <% } %>
+          <% } %>
+        </ul>
+
+        <div class="auth-area">
+          <% if (user) { %>
+            <div class="user-profile">
+              <span class="role-badge <%= user.role === 'admin' ? 'badge-admin' : 'badge-student' %>">
+                <%= user.role === 'admin' ? '학과 관리자' : '학생' %>
+              </span>
+              <span class="user-greeting">
+                <strong><%= user.name %></strong>님
+                <% if (user.student_id) { %>
+                  <small class="student-id">(<%= user.student_id %>)</small>
+                <% } %>
+              </span>
+              <a href="/auth/logout" class="btn btn-sm btn-outline-danger">
+                <i class="fas fa-sign-out-alt"></i> 로그아웃
+              </a>
+            </div>
+          <% } else { %>
+            <div class="guest-buttons">
+              <a href="/auth/login" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-sign-in-alt"></i> 로그인
+              </a>
+              <a href="/auth/register" class="btn btn-sm btn-primary">
+                <i class="fas fa-user-plus"></i> 회원가입
+              </a>
+            </div>
+          <% } %>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 메인 컨텐츠 영역 시작 -->
+  <main class="main-content">
+    <div class="container">
+      <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+        <div class="alert alert-success">
+          <i class="fas fa-check-circle"></i> <%= successMessage %>
+        </div>
+      <% } %>
+      <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-circle"></i> <%= errorMessage %>
+        </div>
+      <% } %>

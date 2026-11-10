@@ -1,0 +1,110 @@
+<%- include('../layout/header', { pageTitle: '회원가입 - 인덕대학교 컴퓨터전자공학과' }) %>
+
+<div class="auth-card-wrapper">
+  <div class="card auth-card">
+    <div class="card-header text-center">
+      <div class="auth-icon-circle auth-icon-register">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <h2>컴퓨터전자공학과 회원가입</h2>
+      <p class="text-muted">복잡한 인증 절차 없이 기본 정보만으로 바로 가입할 수 있습니다.</p>
+    </div>
+
+    <div class="card-body">
+      <form action="/auth/register" method="POST" class="auth-form" onsubmit="return validateRegisterForm()">
+        <div class="form-group">
+          <label for="username">
+            <i class="fas fa-user"></i> 아이디 <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="username" 
+            name="username" 
+            class="form-control" 
+            placeholder="사용할 아이디 (4자 이상 권장)" 
+            required 
+            autofocus
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="name">
+            <i class="fas fa-id-card"></i> 성명 (이름) <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="name" 
+            name="name" 
+            class="form-control" 
+            placeholder="실명 또는 닉네임을 입력하세요" 
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="student_id">
+            <i class="fas fa-graduation-cap"></i> 학번 (선택)
+          </label>
+          <input 
+            type="text" 
+            id="student_id" 
+            name="student_id" 
+            class="form-control" 
+            placeholder="예: 20261500 (선택 사항)"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">
+            <i class="fas fa-key"></i> 비밀번호 <span class="required">*</span>
+          </label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            class="form-control" 
+            placeholder="비밀번호 (4자 이상)" 
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="passwordConfirm">
+            <i class="fas fa-check-double"></i> 비밀번호 확인 <span class="required">*</span>
+          </label>
+          <input 
+            type="password" 
+            id="passwordConfirm" 
+            name="passwordConfirm" 
+            class="form-control" 
+            placeholder="비밀번호를 다시 한 번 입력하세요" 
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg">
+          <i class="fas fa-check"></i> 회원가입 완료
+        </button>
+      </form>
+    </div>
+
+    <div class="card-footer text-center">
+      <span>이미 계정이 있으신가요?</span>
+      <a href="/auth/login" class="link-bold">로그인 바로가기</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function validateRegisterForm() {
+    const pw = document.getElementById('password').value;
+    const pwConfirm = document.getElementById('passwordConfirm').value;
+    if (pw !== pwConfirm) {
+      alert('비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+      return false;
+    }
+    return true;
+  }
+</script>
+
+<%- include('../layout/footer') %>

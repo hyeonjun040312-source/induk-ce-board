@@ -1,0 +1,195 @@
+<%- include('../layout/header', { pageTitle: post.title + ' - 인덕대학교 컴퓨터전자공학과' }) %>
+
+<div class="post-detail-container">
+  <!-- 게시글 상단 네비게이션 및 메타정보 -->
+  <div class="post-detail-header">
+    <div class="post-header-badges">
+      <% if (post.is_notice) { %>
+        <span class="badge badge-notice badge-lg">
+          <i class="fas fa-bullhorn"></i> 학과 공지사항
+        </span>
+      <% } else { %>
+        <span class="badge badge-general">일반 게시글</span>
+      <% } %>
+    </div>
+
+    <h1 class="post-detail-title"><%= post.title %></h1>
+
+    <div class="post-meta-bar">
+      <div class="meta-left">
+        <span class="meta-item">
+          <i class="fas fa-user-circle"></i> <strong><%= post.author_name %></strong>
+          <% if (post.author_username === 'admin') { %>
+            <span class="badge badge-admin-sm">관리자</span>
+          <% } %>
+        </span>
+        <span class="meta-divider">|</span>
+        <span class="meta-item">
+          <i class="far fa-clock"></i> 
+          <% 
+            const d = new Date(post.created_at);
+            const dateStr = !isNaN(d) 
+              ? `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
+              : post.created_at;
+          %>
+          <%= dateStr %>
+        </span>
+        <span class="meta-divider">|</span>
+        <span class="meta-item">
+          <i class="far fa-eye"></i> 조회 <%= post.views %>
+        </span>
+      </div>
+
+      <div class="meta-right">
+        <!-- 타인 글 보호: 본인 글이거나 관리자일 때만 [수정], [삭제] 버튼 노출 -->
+        <% if (user && (user.id === post.author_id || user.role === 'admin')) { %>
+          <div class="post-owner-actions">
+            <a href="/board/<%= post.id %>/edit" class="btn btn-sm btn-outline-primary" title="게시글 수정">
+              <i class="fas fa-edit"></i> 수정
+            </a>
+            <form action="/board/<%= post.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('정말 이 게시글을 삭제하시겠습니까? (연관된 댓글도 함께 삭제됩니다)');">
+              <button type="submit" class="btn btn-sm btn-outline-danger" title="게시글 삭제">
+                <i class="fas fa-trash-alt"></i> 삭제
+              </button>
+            </form>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- 첨부파일 상단 표시 박스 (있는 경우) -->
+  <% if (post.file_original_name) { %>
+    <div class="attachment-box">
+      <div class="attachment-icon">
+        <i class="fas fa-paperclip text-primary"></i>
+      </div>
+      <div class="attachment-info">
+        <span class="attachment-label">첨부파일:</span>
+        <span class="attachment-name"><strong><%= post.file_original_name %></strong></span>
+        <% if (post.file_size) { %>
+          <span class="attachment-size text-muted">(<%= (post.file_size / 1024).toFixed(1) %> KB)</span>
+        <% } %>
+      </div>
+      <div class="attachment-action">
+        <a href="/board/download/<%= post.id %>" class="btn btn-sm btn-download">
+          <i class="fas fa-download"></i> 다운로드
+        </a>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- 게시글 본문 영역 -->
+  <div class="post-content-body">
+    <!-- 이미지 파일인 경우 이미지 인라인 렌더링 -->
+    <% if (post.file_stored_name && post.file_mimetype && post.file_mimetype.startsWith('image/')) { %>
+      <div class="post-inline-image-box">
+        <img src="/uploads/<%= post.file_stored_name %>" alt="<%= post.file_original_name %>" class="post-inline-image">
+      </div>
+    <% } %>
+
+    <div class="content-text"><%- post.content.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>') %></div>
+  </div>
+
+  <!-- 게시글 하단 목록 버튼 -->
+  <div class="post-bottom-actions">
+    <a href="/board" class="btn btn-secondary">
+      <i class="fas fa-list"></i> 목록으로
+    </a>
+    <% if (user) { %>
+      <a href="/board/new" class="btn btn-primary">
+        <i class="fas fa-pen"></i> 새 글 쓰기
+      </a>
+    <% } %>
+  </div>
+
+  <!-- 댓글 영역 (anchor: #comments) -->
+  <section class="comments-section" id="comments">
+    <div class="comments-header">
+      <h3>
+        <i class="fas fa-comments text-primary"></i> 댓글 
+        <span class="comment-count-badge"><%= comments ? comments.length : 0 %></span>
+      </h3>
+    </div>
+
+    <!-- 댓글 작성 폼 -->
+    <div class="comment-write-card">
+      <% if (user) { %>
+        <form action="/board/<%= post.id %>/comments" method="POST" class="comment-form">
+          <div class="comment-user-info">
+            <span class="role-badge <%= user.role === 'admin' ? 'badge-admin' : 'badge-student' %>">
+              <%= user.role === 'admin' ? '관리자' : '학생' %>
+            </span>
+            <strong><%= user.name %></strong> (<%= user.username %>)
+          </div>
+          <div class="comment-input-wrap">
+            <textarea 
+              name="content" 
+              class="form-control comment-textarea" 
+              placeholder="따뜻하고 건설적인 댓글을 남겨주세요." 
+              rows="3" 
+              required
+            ></textarea>
+            <button type="submit" class="btn btn-primary btn-comment-submit">
+              <i class="fas fa-reply"></i> 등록
+            </button>
+          </div>
+        </form>
+      <% } else { %>
+        <div class="comment-login-prompt text-center">
+          <p><i class="fas fa-lock"></i> 댓글을 작성하려면 로그인이 필요합니다.</p>
+          <a href="/auth/login" class="btn btn-sm btn-outline-primary">로그인하러 가기</a>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- 댓글 목록 -->
+    <div class="comments-list">
+      <% if (comments && comments.length > 0) { %>
+        <% comments.forEach(function(comment) { %>
+          <div class="comment-item" id="comment-<%= comment.id %>">
+            <div class="comment-top">
+              <div class="comment-author-wrap">
+                <i class="fas fa-user-circle comment-avatar"></i>
+                <span class="comment-author-name"><strong><%= comment.author_name %></strong></span>
+                <% if (comment.author_username === 'admin') { %>
+                  <span class="badge badge-admin-sm">관리자</span>
+                <% } %>
+                <span class="comment-date text-muted">
+                  <% 
+                    const cd = new Date(comment.created_at);
+                    const cDateStr = !isNaN(cd) 
+                      ? `${cd.getFullYear()}.${String(cd.getMonth()+1).padStart(2,'0')}.${String(cd.getDate()).padStart(2,'0')} ${String(cd.getHours()).padStart(2,'0')}:${String(cd.getMinutes()).padStart(2,'0')}`
+                      : comment.created_at;
+                  %>
+                  <%= cDateStr %>
+                </span>
+              </div>
+
+              <!-- 댓글 삭제 버튼: 본인 댓글이거나 관리자일 때만 노출 -->
+              <% if (user && (user.id === comment.author_id || user.role === 'admin')) { %>
+                <div class="comment-actions">
+                  <form action="/board/comments/<%= comment.id %>/delete" method="POST" onsubmit="return confirm('댓글을 삭제하시겠습니까?');">
+                    <button type="submit" class="btn-comment-delete" title="댓글 삭제">
+                      <i class="fas fa-times"></i> 삭제
+                    </button>
+                  </form>
+                </div>
+              <% } %>
+            </div>
+
+            <div class="comment-body">
+              <p><%- comment.content.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>') %></p>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="empty-comments text-center text-muted">
+          <p>등록된 댓글이 없습니다. 첫 번째 댓글을 남겨보세요!</p>
+        </div>
+      <% } %>
+    </div>
+  </section>
+</div>
+
+<%- include('../layout/footer') %>

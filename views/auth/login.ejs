@@ -1,0 +1,86 @@
+<%- include('../layout/header', { pageTitle: '로그인 - 인덕대학교 컴퓨터전자공학과' }) %>
+
+<div class="auth-card-wrapper">
+  <div class="card auth-card">
+    <div class="card-header text-center">
+      <div class="auth-icon-circle">
+        <i class="fas fa-lock"></i>
+      </div>
+      <h2>컴퓨터전자공학과 로그인</h2>
+      <p class="text-muted">아이디와 비밀번호를 입력하여 게시판 서비스를 이용하세요.</p>
+    </div>
+
+    <div class="card-body">
+      <form action="/auth/login" method="POST" class="auth-form">
+        <div class="form-group">
+          <label for="username">
+            <i class="fas fa-user"></i> 아이디
+          </label>
+          <input 
+            type="text" 
+            id="username" 
+            name="username" 
+            class="form-control" 
+            placeholder="아이디를 입력하세요" 
+            required 
+            autofocus
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">
+            <i class="fas fa-key"></i> 비밀번호
+          </label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            class="form-control" 
+            placeholder="비밀번호를 입력하세요" 
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg">
+          <i class="fas fa-sign-in-alt"></i> 로그인
+        </button>
+      </form>
+
+      <div class="auth-divider">
+        <span>또는</span>
+      </div>
+
+      <!-- 테스트용 빠른 계정 입력 안내 툴박스 -->
+      <div class="quick-login-box">
+        <p class="quick-login-title">
+          <i class="fas fa-magic"></i> <strong>테스트용 빠른 계정 선택</strong>
+        </p>
+        <div class="quick-btn-group">
+          <button type="button" class="btn btn-sm btn-outline-info" onclick="fillAccount('admin', 'admin1234')">
+            <i class="fas fa-shield-halved"></i> 관리자(admin)
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fillAccount('student1', 'student1234')">
+            <i class="fas fa-user-graduate"></i> 학생1(student1)
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fillAccount('student2', 'student1234')">
+            <i class="fas fa-user-graduate"></i> 학생2(student2)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer text-center">
+      <span>계정이 없으신가요?</span>
+      <a href="/auth/register" class="link-bold">회원가입 바로가기</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function fillAccount(id, pw) {
+    document.getElementById('username').value = id;
+    document.getElementById('password').value = pw;
+  }
+</script>
+
+<%- include('../layout/footer') %>

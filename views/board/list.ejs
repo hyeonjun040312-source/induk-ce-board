@@ -1,0 +1,169 @@
+<%- include('../layout/header', { pageTitle: '학과 게시판 - 인덕대학교 컴퓨터전자공학과' }) %>
+
+<div class="board-header-section">
+  <div class="section-title-wrap">
+    <h1 class="page-main-title">
+      <i class="fas fa-microchip text-primary"></i> 컴퓨터전자공학과 열린 게시판
+    </h1>
+    <p class="section-desc">인덕대학교 컴퓨터전자공학과 구성원들을 위한 소통 및 정보 공유 공간입니다.</p>
+  </div>
+
+  <div class="board-top-actions">
+    <form action="/board" method="GET" class="search-form">
+      <div class="search-input-group">
+        <input 
+          type="text" 
+          name="search" 
+          class="form-control search-input" 
+          placeholder="제목, 내용, 작성자 검색" 
+          value="<%= typeof search !== 'undefined' ? search : '' %>"
+        >
+        <button type="submit" class="btn btn-search">
+          <i class="fas fa-search"></i> 검색
+        </button>
+        <% if (search) { %>
+          <a href="/board" class="btn btn-outline-secondary" title="검색 초기화">
+            <i class="fas fa-times"></i>
+          </a>
+        <% } %>
+      </div>
+    </form>
+
+    <div class="write-action">
+      <% if (user) { %>
+        <a href="/board/new" class="btn btn-primary btn-write">
+          <i class="fas fa-pen"></i> 글쓰기
+        </a>
+      <% } else { %>
+        <a href="/auth/login" class="btn btn-outline-primary btn-write">
+          <i class="fas fa-sign-in-alt"></i> 로그인 후 글쓰기
+        </a>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<div class="board-stats-bar">
+  <span><i class="fas fa-file-alt"></i> 총 게시글 <strong><%= totalCount %></strong>건</span>
+  <% if (search) { %>
+    <span class="search-indicator">('<strong><%= search %></strong>' 검색 결과)</span>
+  <% } %>
+</div>
+
+<!-- 게시글 목록 테이블 -->
+<div class="table-responsive board-table-wrapper">
+  <table class="board-table">
+    <thead>
+      <tr>
+        <th class="col-num text-center">번호</th>
+        <th class="col-title">제목</th>
+        <th class="col-author text-center">작성자</th>
+        <th class="col-date text-center">작성일시</th>
+        <th class="col-views text-center">조회수</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (posts && posts.length > 0) { %>
+        <% posts.forEach(function(post, index) { %>
+          <tr class="board-row <%= post.is_notice ? 'notice-row' : '' %>">
+            <td class="col-num text-center">
+              <% if (post.is_notice) { %>
+                <span class="badge badge-notice">
+                  <i class="fas fa-bullhorn"></i> 공지
+                </span>
+              <% } else { %>
+                <%= totalCount - ((currentPage - 1) * 10) - index %>
+              <% } %>
+            </td>
+
+            <td class="col-title">
+              <div class="title-cell-wrap">
+                <% if (post.is_notice) { %>
+                  <span class="notice-tag">[학과공지]</span>
+                <% } %>
+                <a href="/board/<%= post.id %>" class="post-title-link">
+                  <%= post.title %>
+                </a>
+                
+                <% if (post.comment_count > 0) { %>
+                  <span class="badge-comment-count" title="댓글 <%= post.comment_count %>개">
+                    [<%= post.comment_count %>]
+                  </span>
+                <% } %>
+
+                <% if (post.file_original_name) { %>
+                  <span class="badge-attachment" title="첨부파일: <%= post.file_original_name %>">
+                    <i class="fas fa-paperclip"></i>
+                  </span>
+                <% } %>
+              </div>
+            </td>
+
+            <td class="col-author text-center">
+              <span class="author-name">
+                <%= post.author_name %>
+              </span>
+            </td>
+
+            <td class="col-date text-center text-muted">
+              <% 
+                const d = new Date(post.created_at);
+                const dateStr = !isNaN(d) 
+                  ? `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
+                  : post.created_at;
+              %>
+              <%= dateStr %>
+            </td>
+
+            <td class="col-views text-center text-muted">
+              <%= post.views %>
+            </td>
+          </tr>
+        <% }); %>
+      <% } else { %>
+        <tr>
+          <td colspan="5" class="empty-board-message text-center">
+            <i class="fas fa-folder-open empty-icon"></i>
+            <p>등록된 게시글이 없습니다.</p>
+            <% if (user) { %>
+              <a href="/board/new" class="btn btn-sm btn-primary">첫 번째 게시글을 작성해 보세요!</a>
+            <% } %>
+          </td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- 페이징 영역 -->
+<% if (totalPages > 1) { %>
+  <div class="pagination-container">
+    <ul class="pagination">
+      <% if (currentPage > 1) { %>
+        <li class="page-item">
+          <a class="page-link" href="/board?page=<%= currentPage - 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+            <i class="fas fa-chevron-left"></i> 이전
+          </a>
+        </li>
+      <% } %>
+
+      <% for (let p = 1; p <= totalPages; p++) { %>
+        <li class="page-item <%= p === currentPage ? 'active' : '' %>">
+          <a class="page-link" href="/board?page=<%= p %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+            <%= p %>
+          </a>
+        </li>
+      <% } %>
+
+      <% if (currentPage < totalPages) { %>
+        <li class="page-item">
+          <a class="page-link" href="/board?page=<%= currentPage + 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+            다음 <i class="fas fa-chevron-right"></i>
+          </a>
+        </li>
+      <% } %>
+    </ul>
+  </div>
+<% } %>
+
+<%- include('../layout/footer') %>

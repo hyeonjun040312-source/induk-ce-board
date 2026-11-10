@@ -1,0 +1,261 @@
+<%- include('../layout/header', { pageTitle: '관리자 센터 - 인덕대학교 컴퓨터전자공학과' }) %>
+
+<div class="admin-dashboard-container">
+  <!-- 상단 타이틀 및 액션 -->
+  <div class="admin-header-bar">
+    <div>
+      <h1 class="page-main-title">
+        <i class="fas fa-shield-halved text-danger"></i> 학과 관리자 센터
+      </h1>
+      <p class="section-desc">컴퓨터전자공학과 게시판의 회원, 게시글 및 공지사항을 통합 관리합니다.</p>
+    </div>
+    <div class="admin-top-action">
+      <a href="/board/new" class="btn btn-warning">
+        <i class="fas fa-bullhorn"></i> 새 공지사항 등록
+      </a>
+    </div>
+  </div>
+
+  <!-- 통계 카드 그리드 -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-blue">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">총 등록 회원</span>
+        <strong class="stat-value"><%= stats.userCount %></strong>명
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-green">
+        <i class="fas fa-file-lines"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">총 게시글 수</span>
+        <strong class="stat-value"><%= stats.postCount %></strong>개
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-orange">
+        <i class="fas fa-bullhorn"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">등록된 학과 공지</span>
+        <strong class="stat-value"><%= stats.noticeCount %></strong>건
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-purple">
+        <i class="fas fa-comments"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">등록된 전체 댓글</span>
+        <strong class="stat-value"><%= stats.commentCount %></strong>개
+      </div>
+    </div>
+  </div>
+
+  <!-- 관리 섹션 탭 메뉴 -->
+  <div class="admin-tabs">
+    <button class="admin-tab-btn active" onclick="switchAdminTab('users')">
+      <i class="fas fa-user-cog"></i> 회원 관리 (<%= users.length %>)
+    </button>
+    <button class="admin-tab-btn" onclick="switchAdminTab('posts')">
+      <i class="fas fa-folder-open"></i> 게시글 및 공지 관리 (<%= posts.length %>)
+    </button>
+  </div>
+
+  <!-- 1. 회원 관리 섹션 -->
+  <div id="tab-users" class="admin-tab-content active">
+    <div class="card admin-table-card">
+      <div class="card-header">
+        <h3><i class="fas fa-users-gear text-primary"></i> 등록 회원 목록 및 권한 관리</h3>
+        <p class="text-muted">회원의 권한(일반학생/관리자)을 변경하거나 부적절한 회원을 강제 탈퇴 처리할 수 있습니다.</p>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table admin-table">
+          <thead>
+            <tr>
+              <th class="text-center">ID</th>
+              <th>아이디</th>
+              <th>성명</th>
+              <th>학번</th>
+              <th class="text-center">현재 권한</th>
+              <th class="text-center">가입일</th>
+              <th class="text-center">권한 변경</th>
+              <th class="text-center">회원 관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach(function(u) { %>
+              <tr>
+                <td class="text-center"><%= u.id %></td>
+                <td>
+                  <strong><%= u.username %></strong>
+                  <% if (u.id === user.id) { %>
+                    <span class="badge badge-info-sm">본인</span>
+                  <% } %>
+                </td>
+                <td><%= u.name %></td>
+                <td><%= u.student_id || '-' %></td>
+                <td class="text-center">
+                  <span class="role-badge <%= u.role === 'admin' ? 'badge-admin' : 'badge-student' %>">
+                    <%= u.role === 'admin' ? '관리자' : '일반학생' %>
+                  </span>
+                </td>
+                <td class="text-center text-muted">
+                  <% 
+                    const ud = new Date(u.created_at);
+                    const uDateStr = !isNaN(ud) 
+                      ? `${ud.getFullYear()}.${String(ud.getMonth()+1).padStart(2,'0')}.${String(ud.getDate()).padStart(2,'0')}`
+                      : u.created_at;
+                  %>
+                  <%= uDateStr %>
+                </td>
+                <td class="text-center">
+                  <% if (u.id !== user.id) { %>
+                    <form action="/admin/users/<%= u.id %>/role" method="POST" class="inline-flex-form">
+                      <select name="role" class="form-control form-control-sm admin-role-select">
+                        <option value="student" <%= u.role === 'student' ? 'selected' : '' %>>일반학생</option>
+                        <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>관리자</option>
+                      </select>
+                      <button type="submit" class="btn btn-sm btn-outline-primary" title="권한 변경 저장">
+                        변경
+                      </button>
+                    </form>
+                  <% } else { %>
+                    <span class="text-muted">-</span>
+                  <% } %>
+                </td>
+                <td class="text-center">
+                  <% if (u.id !== user.id) { %>
+                    <form action="/admin/users/<%= u.id %>/delete" method="POST" onsubmit="return confirm('[경고] 정말 회원을 강제 탈퇴 처리하시겠습니까? 해당 회원이 작성한 모든 게시글과 댓글이 영구 삭제됩니다.');">
+                      <button type="submit" class="btn btn-sm btn-danger">
+                        <i class="fas fa-user-slash"></i> 강제 탈퇴
+                      </button>
+                    </form>
+                  <% } else { %>
+                    <span class="text-muted">본인 계정 보호</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 게시글 관리 섹션 -->
+  <div id="tab-posts" class="admin-tab-content">
+    <div class="card admin-table-card">
+      <div class="card-header">
+        <h3><i class="fas fa-list-check text-primary"></i> 전체 게시글 및 공지사항 관리</h3>
+        <p class="text-muted">공지사항을 지정/해제하거나 부적절한 게시물을 강제로 즉각 삭제할 수 있습니다.</p>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table admin-table">
+          <thead>
+            <tr>
+              <th class="text-center">번호</th>
+              <th class="text-center">분류</th>
+              <th>제목</th>
+              <th>작성자</th>
+              <th class="text-center">댓글</th>
+              <th class="text-center">조회수</th>
+              <th class="text-center">작성일</th>
+              <th class="text-center">공지 설정</th>
+              <th class="text-center">삭제 관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% posts.forEach(function(p) { %>
+              <tr class="<%= p.is_notice ? 'notice-row' : '' %>">
+                <td class="text-center"><%= p.id %></td>
+                <td class="text-center">
+                  <% if (p.is_notice) { %>
+                    <span class="badge badge-notice"><i class="fas fa-bullhorn"></i> 공지</span>
+                  <% } else { %>
+                    <span class="badge badge-general">일반</span>
+                  <% } %>
+                </td>
+                <td>
+                  <a href="/board/<%= p.id %>" target="_blank" class="admin-post-link">
+                    <%= p.title %>
+                  </a>
+                  <% if (p.file_original_name) { %>
+                    <i class="fas fa-paperclip text-muted" title="<%= p.file_original_name %>"></i>
+                  <% } %>
+                </td>
+                <td><%= p.author_name %> (<%= p.author_username %>)</td>
+                <td class="text-center">[<%= p.comment_count %>]</td>
+                <td class="text-center"><%= p.views %></td>
+                <td class="text-center text-muted">
+                  <% 
+                    const pd = new Date(p.created_at);
+                    const pDateStr = !isNaN(pd) 
+                      ? `${pd.getFullYear()}.${String(pd.getMonth()+1).padStart(2,'0')}.${String(pd.getDate()).padStart(2,'0')}`
+                      : p.created_at;
+                  %>
+                  <%= pDateStr %>
+                </td>
+                <td class="text-center">
+                  <form action="/admin/posts/<%= p.id %>/toggle-notice" method="POST" style="display:inline;">
+                    <% if (p.is_notice) { %>
+                      <button type="submit" class="btn btn-sm btn-outline-secondary" title="공지 해제">
+                        공지 해제
+                      </button>
+                    <% } else { %>
+                      <button type="submit" class="btn btn-sm btn-warning" title="공지로 지정">
+                        <i class="fas fa-bullhorn"></i> 공지 지정
+                      </button>
+                    <% } %>
+                  </form>
+                </td>
+                <td class="text-center">
+                  <form action="/admin/posts/<%= p.id %>/delete" method="POST" onsubmit="return confirm('부적절한 게시글로 판단하여 영구 삭제하시겠습니까?');">
+                    <button type="submit" class="btn btn-sm btn-danger">
+                      <i class="fas fa-trash-alt"></i> 강제 삭제
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function switchAdminTab(tabName) {
+    document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.admin-tab-content').forEach(content => content.classList.remove('active'));
+
+    if (tabName === 'users') {
+      document.querySelectorAll('.admin-tab-btn')[0].classList.add('active');
+      document.getElementById('tab-users').classList.add('active');
+      window.location.hash = 'users';
+    } else {
+      document.querySelectorAll('.admin-tab-btn')[1].classList.add('active');
+      document.getElementById('tab-posts').classList.add('active');
+      window.location.hash = 'posts';
+    }
+  }
+
+  // URL 해시 기반 탭 자동 선택
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.location.hash === '#posts') {
+      switchAdminTab('posts');
+    }
+  });
+</script>
+
+<%- include('../layout/footer') %>

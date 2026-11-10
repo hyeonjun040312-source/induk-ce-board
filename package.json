@@ -1,0 +1,21 @@
+{
+  "name": "induk-ce-board",
+  "version": "1.0.0",
+  "description": "인덕대학교 컴퓨터전자공학과 웹 게시판 시스템",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "multer": "^1.4.5-lts.1",
+    "sqlite3": "^5.1.7"
+  },
+  "keywords": ["induk", "board", "express", "sqlite"],
+  "author": "Induk Univ CEE",
+  "license": "ISC"
+}

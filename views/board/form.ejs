@@ -1,0 +1,117 @@
+<%- include('../layout/header', { pageTitle: (isEdit ? '게시글 수정' : '새 글 작성') + ' - 인덕대학교 컴퓨터전자공학과' }) %>
+
+<div class="form-container">
+  <div class="card form-card">
+    <div class="card-header">
+      <h2>
+        <i class="fas <%= isEdit ? 'fa-edit' : 'fa-pen-nib' %> text-primary"></i> 
+        <%= isEdit ? '게시글 수정' : '새 게시글 작성' %>
+      </h2>
+      <p class="text-muted">
+        <%= isEdit ? '게시글 내용을 수정합니다.' : '인덕대학교 컴퓨터전자공학과 구성원들과 공유할 내용을 작성하세요.' %>
+      </p>
+    </div>
+
+    <div class="card-body">
+      <form 
+        action="<%= isEdit ? '/board/' + post.id + '/edit' : '/board/new' %>" 
+        method="POST" 
+        enctype="multipart/form-data" 
+        class="post-form"
+      >
+        <!-- 관리자인 경우 공지사항 옵션 제공 -->
+        <% if (user && user.role === 'admin') { %>
+          <div class="form-group form-check-box notice-check-box">
+            <label class="custom-checkbox-label">
+              <input 
+                type="checkbox" 
+                name="is_notice" 
+                value="1" 
+                <%= (post && post.is_notice) ? 'checked' : '' %>
+              >
+              <span class="checkbox-custom-ui"></span>
+              <span class="checkbox-text">
+                <i class="fas fa-bullhorn text-warning"></i> 
+                <strong>학과 공지사항으로 등록</strong> (목록 최상단 고정 및 강조 표시)
+              </span>
+            </label>
+          </div>
+        <% } %>
+
+        <!-- 제목 입력 -->
+        <div class="form-group">
+          <label for="title">
+            <i class="fas fa-heading"></i> 제목 <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="title" 
+            name="title" 
+            class="form-control form-control-lg" 
+            placeholder="제목을 입력하세요" 
+            value="<%= post ? post.title : '' %>" 
+            required 
+            autofocus
+          >
+        </div>
+
+        <!-- 본문 입력 -->
+        <div class="form-group">
+          <label for="content">
+            <i class="fas fa-align-left"></i> 본문 내용 <span class="required">*</span>
+          </label>
+          <textarea 
+            id="content" 
+            name="content" 
+            class="form-control post-content-textarea" 
+            rows="12" 
+            placeholder="내용을 자세히 입력해 주세요." 
+            required
+          ><%= post ? post.content : '' %></textarea>
+        </div>
+
+        <!-- 파일 첨부 -->
+        <div class="form-group attachment-input-group">
+          <label for="file">
+            <i class="fas fa-paperclip"></i> 첨부파일 (이미지 또는 문서)
+          </label>
+
+          <% if (isEdit && post.file_original_name) { %>
+            <div class="current-file-info">
+              <span class="current-file-label">현재 등록된 파일:</span>
+              <strong class="text-primary"><%= post.file_original_name %></strong>
+              <label class="delete-file-option">
+                <input type="checkbox" name="delete_file" value="1">
+                기존 파일 삭제
+              </label>
+            </div>
+            <p class="file-help-text text-muted">※ 새 파일을 선택하시면 기존 파일은 자동으로 교체됩니다.</p>
+          <% } %>
+
+          <input 
+            type="file" 
+            id="file" 
+            name="file" 
+            class="form-control-file"
+          >
+          <small class="form-text text-muted">
+            - 지원 파일: 이미지(JPG, PNG, GIF, WEBP), 문서(PDF, HWP, DOCX, XLSX, PPTX, TXT, ZIP 등)<br>
+            - 최대 용량: 20MB 이하
+          </small>
+        </div>
+
+        <!-- 폼 하단 버튼 -->
+        <div class="form-actions">
+          <a href="<%= isEdit ? '/board/' + post.id : '/board' %>" class="btn btn-secondary">
+            <i class="fas fa-times"></i> 취소
+          </a>
+          <button type="submit" class="btn btn-primary btn-submit">
+            <i class="fas fa-check"></i> <%= isEdit ? '수정 완료' : '게시글 등록' %>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../layout/footer') %>
